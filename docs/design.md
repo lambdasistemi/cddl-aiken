@@ -291,44 +291,38 @@ fn validate_value(bytes: ByteArray, pos: Int) -> Int {
 }
 ```
 
-### Map Key Ordering
+### Map Key Ordering (Canonical CBOR)
 
-CBOR maps don't guarantee key order. The generated validator must
-handle any key permutation. Strategy: iterate entries, match each
-key by name, track which required keys were seen:
+We require canonical CBOR (RFC 7049 §3.9): map keys must be in
+lexicographic order of their encoded bytes. This means the generated
+validator can check keys sequentially without tracking seen flags:
 
 ```aiken
-fn validate_value_entries(
-  bytes: ByteArray,
-  pos: Int,
-  remaining: Int,
-  seen_amount: Bool,
-  seen_payload: Bool,
-  seen_label: Bool,
-) -> Int {
-  if remaining == 0 {
-    // Check all required keys were present
-    expect seen_amount
-    expect seen_payload
+fn validate_value(bytes: ByteArray, pos: Int) -> Int {
+  // Keys in canonical order: "amount" < "label" < "payload"
+  let ParseResult { value: count, pos } = parse_map_header(bytes, pos)
+
+  // "amount" (required)
+  let ParseResult { value: key, pos } = parse_tstr(bytes, pos)
+  expect key == "amount"
+  let ParseResult { pos, .. } = parse_uint(bytes, pos)
+
+  // "label" (optional) — only if count > 2
+  let pos = if count > 2 {
+    let ParseResult { value: key, pos } = parse_tstr(bytes, pos)
+    expect key == "label"
+    let ParseResult { pos, .. } = parse_tstr(bytes, pos)
     pos
   } else {
-    let ParseResult { value: key_name, pos } = parse_tstr(bytes, pos)
-    if key_name == "amount" {
-      expect !seen_amount  // no duplicates
-      let ParseResult { pos, .. } = parse_uint(bytes, pos)
-      validate_value_entries(bytes, pos, remaining - 1, True, seen_payload, seen_label)
-    } else if key_name == "payload" {
-      expect !seen_payload
-      let ParseResult { pos, .. } = parse_bstr(bytes, pos)
-      validate_value_entries(bytes, pos, remaining - 1, seen_amount, True, seen_label)
-    } else if key_name == "label" {
-      expect !seen_label
-      let ParseResult { pos, .. } = parse_tstr(bytes, pos)
-      validate_value_entries(bytes, pos, remaining - 1, seen_amount, seen_payload, True)
-    } else {
-      fail @"unexpected key"
-    }
+    pos
   }
+
+  // "payload" (required)
+  let ParseResult { value: key, pos } = parse_tstr(bytes, pos)
+  expect key == "payload"
+  let ParseResult { pos, .. } = parse_bstr(bytes, pos)
+
+  pos
 }
 ```
 
@@ -346,17 +340,87 @@ For the parsing library, the relevant CBOR encoding (RFC 7049):
 | 5 | Map | Count-prefixed (count = number of key-value pairs) |
 | 7 | Simple | `0xf4` = false, `0xf5` = true, `0xf6` = null |
 
+## MPFS Integration
+
+### Existing Request Structure
+
+From `cardano-mpfs-onchain/validators/types.ak`:
+
+```aiken
+pub type Request {
+  requestToken: TokenId,
+  requestOwner: VerificationKeyHash,
+  requestKey: ByteArray,           // ← CBOR bytes to validate
+  requestValue: Operation,         // ← contains CBOR bytes
+  fee: Int,
+  submitted_at: Int,
+}
+
+pub type Operation {
+  Insert(ByteArray)                // value bytes
+  Delete(ByteArray)                // expected value bytes
+  Update(ByteArray, ByteArray)     // (old_value, new_value) bytes
+}
+```
+
+### How the Withdrawal Validator Integrates
+
+The cage validator will be parameterized with an optional `ScriptHash`.
+When present, at **mint time** (`Minting` redeemer), the cage validator
+requires the withdrawal validator to be present in `tx.withdrawals`.
+
+The withdrawal validator reads the transaction context to find the
+request input (there's exactly one at mint time), extracts `requestKey`
+and the value `ByteArray` from `requestValue`, and validates both
+against the CDDL schema.
+
+```aiken
+validator cddl_schema {
+  withdraw(redeemer: Data, ctx: ScriptContext) {
+    // Find the request input in the transaction
+    let request = find_request_input(ctx.transaction)
+
+    // Validate key CBOR
+    let key_end = validate_key(request.requestKey, 0)
+    expect key_end == builtin.length_of_bytearray(request.requestKey)
+
+    // Extract value bytes from Operation
+    let value_bytes = get_value_bytes(request.requestValue)
+
+    // Validate value CBOR
+    let value_end = validate_value(value_bytes, 0)
+    expect value_end == builtin.length_of_bytearray(value_bytes)
+
+    True
+  }
+}
+```
+
+### Changes Needed in cardano-mpfs-onchain
+
+1. Add optional `schema_validator: Option<ScriptHash>` parameter to
+   the cage validator
+2. In `validateMint`, when `schema_validator` is `Some(hash)`:
+   require `hash` is present in `tx.withdrawals`
+3. The withdrawal validator runs automatically via Cardano ledger rules
+
+## Resolved Design Decisions
+
+| Decision | Choice | Rationale |
+|----------|--------|-----------|
+| Canonical CBOR | **Required** | Keys must be in lexicographic order (RFC 7049 §3.9). Simplifies generated code — sequential key matching instead of permutation tracking |
+| Trace messages | **Yes** | Include `trace @"key: expected 'owner'"` style messages for debugging. Cost is acceptable for schema validators |
+| Schema cardinality | **One per cage** | Each CDDL file produces one withdrawal validator. Different cages can use different schemas |
+| Data representation | **Raw CBOR bytes** | Key and value are `ByteArray` containing CBOR, parsed on-chain |
+
 ## Open Questions
 
-1. **Redeemer shape**: Is the withdrawal redeemer `(key_bytes, value_bytes)` or something else?  Depends on how the MPFS cage validator passes data.
+1. **Script size budget**: On-chain CBOR parsing is expensive. Need to
+   profile generated validators to ensure they fit within transaction limits.
 
-2. **Canonical CBOR**: Should we require deterministic/canonical CBOR encoding (sorted map keys)? If yes, validation is simpler — we can expect keys in lexicographic order instead of handling permutations.
-
-3. **Error reporting**: On-chain we just fail. Should the generated code include trace messages for debugging? (costs budget)
-
-4. **Multiple schemas**: One CDDL file per cage, or support multiple key/value schema pairs?
-
-5. **Script size budget**: On-chain CBOR parsing is expensive. Need to profile generated validators to ensure they fit within transaction limits.
+2. **Request discovery**: How does the withdrawal validator find the
+   request input? By datum type? By address? Needs alignment with
+   cage validator changes.
 
 ## Implementation Plan
 
