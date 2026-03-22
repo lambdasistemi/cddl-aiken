@@ -41,7 +41,7 @@ source = "github"
 
 A self-contained CBOR parsing library. Core type:
 
-```aiken
+```rust
 pub type ParseResult<a> {
   value: a,
   pos: Int,
@@ -56,7 +56,7 @@ Provides parsers for all CBOR major types (uint, int, bstr, tstr, bool, null, ar
 
 The key schema has one required field `"owner"` of type `bstr .size 28`:
 
-```aiken
+```rust
 fn validate_key(bytes: ByteArray, pos: Int) -> Int {
   let ParseResult { value: count, pos } = parse_map_header(bytes, pos)
   expect count == 1
@@ -73,7 +73,7 @@ fn validate_key(bytes: ByteArray, pos: Int) -> Int {
 
 The value schema has two required fields and one optional. Keys are sorted canonically: `"amount"` < `"label"` < `"payload"`.
 
-```aiken
+```rust
 fn validate_value(bytes: ByteArray, pos: Int) -> Int {
   let ParseResult { value: count, pos } = parse_map_header(bytes, pos)
   expect count >= 2
@@ -108,7 +108,7 @@ fn validate_value(bytes: ByteArray, pos: Int) -> Int {
 
 #### Withdrawal validator
 
-```aiken
+```rust
 validator cddl_schema {
   withdraw(redeemer: Data, _account: Credential, _self: Transaction) {
     expect (key_bytes, value_bytes): (ByteArray, ByteArray) = redeemer

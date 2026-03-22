@@ -209,7 +209,7 @@ cursor position.
 
 Core operations:
 
-```aiken
+```rust
 /// Parse result: decoded value + remaining bytes position
 type ParseResult<a> {
   value: a,
@@ -245,7 +245,7 @@ fn parse_array_header(bytes: ByteArray, pos: Int) -> ParseResult<Int>
 
 For the example CDDL above, the compiler generates:
 
-```aiken
+```rust
 use aiken/collection/list
 
 validator cddl_validator {
@@ -297,7 +297,7 @@ We require canonical CBOR (RFC 7049 §3.9): map keys must be in
 lexicographic order of their encoded bytes. This means the generated
 validator can check keys sequentially without tracking seen flags:
 
-```aiken
+```rust
 fn validate_value(bytes: ByteArray, pos: Int) -> Int {
   // Keys in canonical order: "amount" < "label" < "payload"
   let ParseResult { value: count, pos } = parse_map_header(bytes, pos)
@@ -346,7 +346,7 @@ For the parsing library, the relevant CBOR encoding (RFC 7049):
 
 From `cardano-mpfs-onchain/validators/types.ak`:
 
-```aiken
+```rust
 pub type Request {
   requestToken: TokenId,
   requestOwner: VerificationKeyHash,
@@ -374,7 +374,7 @@ request input (there's exactly one at mint time), extracts `requestKey`
 and the value `ByteArray` from `requestValue`, and validates both
 against the CDDL schema.
 
-```aiken
+```rust
 validator cddl_schema {
   withdraw(redeemer: Data, ctx: ScriptContext) {
     // Find the request input in the transaction

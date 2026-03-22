@@ -62,7 +62,7 @@ Thin orchestration layer: parse → validate → generate. Returns a list of `(F
 
 ## Generated validator structure
 
-```aiken
+```rust
 use cbor.{ParseResult, parse_map_header, parse_tstr, parse_uint, ...}
 
 fn validate_key(bytes: ByteArray, pos: Int) -> Int {
