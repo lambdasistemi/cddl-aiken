@@ -8,10 +8,14 @@
     flake-parts.url = "github:hercules-ci/flake-parts";
     iohkNix.follows = "cardano-node-clients/iohkNix";
     CHaP.follows = "cardano-node-clients/CHaP";
+    mkdocs = {
+      url = "github:paolino/dev-assets?dir=mkdocs";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
   };
 
   outputs = inputs@{ self, nixpkgs, flake-parts, haskellNix, iohkNix, CHaP
-    , cardano-node-clients, ... }:
+    , cardano-node-clients, mkdocs, ... }:
     flake-parts.lib.mkFlake { inherit inputs; } {
       systems = [ "x86_64-linux" ];
       perSystem = { system, ... }:
@@ -39,6 +43,9 @@
                 fourmolu = "latest";
                 hlint = "latest";
               };
+              inputsFrom = [
+                mkdocs.devShells.${system}.default
+              ];
               buildInputs = [
                 pkgs.just
                 pkgs.curl

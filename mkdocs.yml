@@ -1,0 +1,44 @@
+site_name: cddl-aiken
+site_url: https://lambdasistemi.github.io/cddl-aiken/
+repo_url: https://github.com/lambdasistemi/cddl-aiken
+
+theme:
+  name: material
+  palette:
+    scheme: slate
+  features:
+    - navigation.indexes
+    - navigation.sections
+    - navigation.path
+    - toc.integrate
+    - content.code.copy
+
+plugins:
+  - search
+
+markdown_extensions:
+  - admonition
+  - tables
+  - footnotes
+  - def_list
+  - pymdownx.highlight:
+      anchor_linenums: true
+  - pymdownx.inlinehilite
+  - pymdownx.snippets
+  - pymdownx.superfences:
+      custom_fences:
+        - name: mermaid
+          class: mermaid
+          format: !!python/name:pymdownx.superfences.fence_code_format
+  - pymdownx.tabbed:
+      alternate_style: true
+  - pymdownx.tasklist:
+      custom_checkbox: true
+
+nav:
+  - Home: index.md
+  - Getting Started: getting-started.md
+  - CDDL Reference: cddl-reference.md
+  - Architecture: architecture.md
+  - Generated Code: generated-code.md
+  - E2E Testing: e2e-testing.md

@@ -16,7 +16,19 @@ format-check:
 hlint:
   hlint app/ src/ test/
 
+e2e:
+  cabal test cddl-e2e -O0 --test-show-details=direct
+
 ci: format-check hlint build test
+
+build-docs:
+  mkdocs build
+
+serve-docs:
+  mkdocs serve
+
+deploy-docs:
+  mkdocs gh-deploy --force
 
 clean:
   cabal clean
