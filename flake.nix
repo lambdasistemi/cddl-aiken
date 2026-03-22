@@ -1,31 +1,55 @@
 {
   inputs = {
-    nixpkgs.url = "github:NixOS/nixpkgs/nixos-24.11";
-    flake-utils.url = "github:numtide/flake-utils";
+    cardano-node-clients.url = "github:lambdasistemi/cardano-node-clients";
+    cardano-node.follows = "cardano-node-clients/cardano-node";
+    haskellNix.follows = "cardano-node-clients/haskellNix";
+    nixpkgs.follows = "cardano-node-clients/nixpkgs";
+    flake-parts.url = "github:hercules-ci/flake-parts";
+    iohkNix.follows = "cardano-node-clients/iohkNix";
+    CHaP.follows = "cardano-node-clients/CHaP";
   };
 
-  outputs = { self, nixpkgs, flake-utils }:
-    flake-utils.lib.eachDefaultSystem (system:
-      let
-        pkgs = nixpkgs.legacyPackages.${system};
-        ghc = pkgs.haskell.packages.ghc966;
-        hsPkgs = ghc.override {
-          overrides = _hfinal: _hprev: { };
+  outputs = inputs@{ self, nixpkgs, flake-parts, haskellNix, iohkNix, CHaP
+    , cardano-node, cardano-node-clients, ... }:
+    flake-parts.lib.mkFlake { inherit inputs; } {
+      systems = [ "x86_64-linux" ];
+      perSystem = { system, ... }:
+        let
+          pkgs = import nixpkgs {
+            inherit system;
+            overlays = [
+              iohkNix.overlays.crypto
+              haskellNix.overlay
+              iohkNix.overlays.haskell-nix-crypto
+              iohkNix.overlays.cardano-lib
+            ];
+          };
+          cardano-node-pkgs = cardano-node.packages.${system};
+          devnet-genesis = cardano-node-clients.packages.${system}.devnet-genesis;
+          project = pkgs.haskell-nix.cabalProject' {
+            src = ./.;
+            compiler-nix-name = "ghc984";
+            inputMap = {
+              "https://chap.intersectmbo.org/" = CHaP;
+            };
+            shell = {
+              tools = {
+                cabal = "latest";
+                fourmolu = "latest";
+                hlint = "latest";
+              };
+              buildInputs = [
+                pkgs.just
+                cardano-node-pkgs.cardano-node
+              ];
+              shellHook = ''
+                export E2E_GENESIS_DIR="${devnet-genesis}"
+              '';
+            };
+          };
+        in
+        {
+          devShells.default = project.shell;
         };
-        devTools = [
-          pkgs.just
-          pkgs.cabal-install
-          pkgs.hlint
-          hsPkgs.fourmolu
-        ];
-      in
-      {
-        devShells.default = hsPkgs.shellFor {
-          packages = _: [ ];
-          nativeBuildInputs = devTools ++ [
-            hsPkgs.ghc
-          ];
-        };
-      }
-    );
+    };
 }
