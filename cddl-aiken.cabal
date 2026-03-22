@@ -71,6 +71,7 @@ test-suite cddl-e2e
     , base                          >=4.18 && <5
     , base16-bytestring
     , bytestring
+    , cardano-crypto-class
     , cardano-ledger-alonzo
     , cardano-ledger-api
     , cardano-ledger-conway

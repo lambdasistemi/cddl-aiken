@@ -6,7 +6,7 @@ import Cardano.Ledger.Address (RewardAccount (..))
 import Cardano.Ledger.Alonzo.PParams (getLanguageView)
 import Cardano.Ledger.Alonzo.Scripts (AsIx (..), ExUnits (..), fromPlutusScript, mkPlutusScript)
 import Cardano.Ledger.Alonzo.Tx (hashScriptIntegrity)
-import Cardano.Ledger.Alonzo.TxWits (Redeemers (..), TxDats (..), rdmrsTxWitsL)
+import Cardano.Ledger.Alonzo.TxWits (AlonzoTxWits (..), Redeemers (..), TxDats (..))
 import Cardano.Ledger.Api.Tx (bodyTxL, mkBasicTx, witsTxL)
 import Cardano.Ledger.Api.Tx.Out (TxOut, coinTxOutL, mkBasicTxOut)
 import Cardano.Ledger.Api.Tx.Body
@@ -20,22 +20,25 @@ import Cardano.Ledger.Api.Tx.Body
   , scriptIntegrityHashTxBodyL
   , withdrawalsTxBodyL
   )
-import Cardano.Ledger.BaseTypes (Network (..), StrictMaybe (..))
-import Cardano.Ledger.BaseTypes (Inject (..))
+import Cardano.Ledger.BaseTypes (Inject (..), Network (..), StrictMaybe (..))
 import Cardano.Ledger.Coin (Coin (..), unCoin)
 import Cardano.Ledger.Conway (ConwayEra)
 import Cardano.Ledger.Conway.Scripts (ConwayPlutusPurpose (..))
 import Cardano.Ledger.Conway.TxCert (ConwayDelegCert (..), ConwayTxCert (..))
-import Cardano.Ledger.Core (PParams, Script, ScriptHash, hashScript, scriptTxWitsL)
+import Cardano.Ledger.Core (PParams, Script, ScriptHash, hashScript)
 import Cardano.Ledger.Credential (Credential (..), StakeCredential)
-import Cardano.Ledger.TxIn (TxIn)
 import Cardano.Ledger.Plutus.Data (Data (..))
 import Cardano.Ledger.Plutus.Language (Language (..), Plutus (..), PlutusBinary (..))
 import Cardano.Ledger.Shelley.API (Withdrawals (..))
+import Cardano.Ledger.TxIn (TxIn)
 import Cardano.Node.Client.Balance (balanceTx)
+import Cardano.Crypto.DSIGN (deriveVerKeyDSIGN, signedDSIGN)
+import Cardano.Ledger.Api.Tx (txIdTx)
+import Cardano.Ledger.Hashes (extractHash)
+import Cardano.Ledger.Keys (VKey (..), WitVKey (..), asWitness)
+import Cardano.Ledger.TxIn (TxId (..))
 import Cardano.Node.Client.E2E.Setup
-  ( addKeyWitness
-  , genesisAddr
+  ( genesisAddr
   , genesisSignKey
   , withDevnet
   )
@@ -103,22 +106,30 @@ registerStakeCred
 registerStakeCred prov sub pp stakeCred = do
   utxos <- queryUTxOs prov genesisAddr
   let deposit = Coin 400000
-      cert = ConwayTxCertDeleg (ConwayRegCert stakeCred (SJust deposit))
+      -- Use SNothing deposit to avoid requiring script witness for registration
+      cert = ConwayTxCertDeleg (ConwayRegCert stakeCred SNothing)
       body =
         (mkBasicTxBody :: TxBody ConwayEra)
           & certsTxBodyL .~ StrictSeq.singleton cert
   case balanceTx pp utxos genesisAddr (mkBasicTx body) of
     Left err -> error $ "register balanceTx: " <> show err
     Right balanced ->
-      -- Subtract deposit from the change output (last output added by balanceTx)
       let bdy = balanced ^. bodyTxL
           outs = bdy ^. outputsTxBodyL
           adjustedOuts = adjustLastOutput outs (\(Coin c) -> Coin (c - unCoin deposit))
           fixed = balanced & bodyTxL .~ (bdy & outputsTxBodyL .~ adjustedOuts)
-          signed = addKeyWitness genesisSignKey fixed
-       in submitTx sub signed
+          -- Sign with genesis key (no script witness needed for SNothing registration)
+          TxId bodyHash = txIdTx fixed
+          vk = VKey (deriveVerKeyDSIGN genesisSignKey)
+          sig = signedDSIGN () (extractHash bodyHash) genesisSignKey
+          keyWit = WitVKey (asWitness vk) sig
+          wits = AlonzoTxWits (Set.singleton keyWit) mempty mempty (TxDats mempty) mempty
+       in submitTx sub (fixed & witsTxL .~ wits)
 
--- | Build and submit a withdrawal transaction
+-- | Build and submit a withdrawal transaction.
+-- Constructs witnesses using the AlonzoTxWits pattern to ensure correct
+-- MemoBytes serialization (lens-based witness composition can produce
+-- corrupt serialized bytes).
 submitWithdrawal
   :: Provider IO
   -> Submitter IO
@@ -149,7 +160,7 @@ submitWithdrawal _prov sub pp utxos keyCbor valueCbor = do
         (x : _) -> x
         [] -> error "no UTxOs"
       Coin available = feeOut ^. coinTxOutL
-      fee = Coin 1_000_000
+      fee = Coin 2_000_000
       changeCoin = Coin (available - unCoin fee)
       changeOut = mkBasicTxOut genesisAddr (inject changeCoin)
 
@@ -162,14 +173,24 @@ submitWithdrawal _prov sub pp utxos keyCbor valueCbor = do
           & outputsTxBodyL .~ StrictSeq.singleton changeOut
           & feeTxBodyL .~ fee
 
-      tx =
-        mkBasicTx finalBody
-          & witsTxL . scriptTxWitsL .~ Map.singleton scriptHash script
-          & witsTxL . rdmrsTxWitsL .~ rdmrs
-  putStrLn $ "Before sign - scripts: " <> show (Map.size (tx ^. witsTxL . scriptTxWitsL))
-  let signedTx = addKeyWitness genesisSignKey tx
-  putStrLn $ "After sign - scripts: " <> show (Map.size (signedTx ^. witsTxL . scriptTxWitsL))
-  submitTx sub signedTx
+      -- Build tx body first, then construct all witnesses at once
+      -- via AlonzoTxWits pattern to get correct MemoBytes encoding.
+      -- We must NOT use addKeyWitness afterward, as the lens-based
+      -- witness modification corrupts MemoBytes serialization.
+      baseTx = mkBasicTx finalBody
+      TxId bodyHash = txIdTx baseTx
+      vk = VKey (deriveVerKeyDSIGN genesisSignKey)
+      sig = signedDSIGN () (extractHash bodyHash) genesisSignKey
+      keyWit = WitVKey (asWitness vk) sig
+      wits =
+        AlonzoTxWits
+          (Set.singleton keyWit) -- vkey witnesses
+          mempty -- bootstrap witnesses
+          (Map.singleton scriptHash script) -- plutus scripts
+          (TxDats mempty) -- datums
+          rdmrs -- redeemers
+
+  submitTx sub (baseTx & witsTxL .~ wits)
 
 -- | Bracket that starts the local devnet and provides channels
 withDevnetBracket :: ((LSQChannel, LTxSChannel) -> IO ()) -> IO ()
@@ -192,7 +213,6 @@ loadScript =
            in (s, hashScript @ConwayEra s)
         Nothing -> error "loadScript: invalid PlutusV3 script"
 
--- | Adjust the coin value of the last output in a sequence
 -- | Adjust the coin value of the last output in a sequence
 adjustLastOutput
   :: StrictSeq.StrictSeq (TxOut ConwayEra)
