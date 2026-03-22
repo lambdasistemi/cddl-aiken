@@ -5,7 +5,7 @@ module CddlAiken.E2E.WithdrawalSpec (spec) where
 import Cardano.Ledger.Address (RewardAccount (..))
 import Cardano.Ledger.Alonzo.PParams (getLanguageView)
 import Cardano.Ledger.Alonzo.Scripts (AsIx (..), ExUnits (..), fromPlutusScript, mkPlutusScript)
-import Cardano.Ledger.Alonzo.Tx (ScriptIntegrity (..), hashScriptIntegrity)
+import Cardano.Ledger.Alonzo.Tx (hashScriptIntegrity)
 import Cardano.Ledger.Alonzo.TxWits (Redeemers (..), TxDats (..), rdmrsTxWitsL)
 import Cardano.Ledger.Api.Tx (bodyTxL, mkBasicTx, witsTxL)
 import Cardano.Ledger.Api.Tx.Out (TxOut, coinTxOutL, mkBasicTxOut)
@@ -143,8 +143,7 @@ submitWithdrawal _prov sub pp utxos keyCbor valueCbor = do
 
       langViews = Set.singleton (getLanguageView pp PlutusV3)
       integrity =
-        hashScriptIntegrity
-          (ScriptIntegrity rdmrs (TxDats mempty :: TxDats ConwayEra) langViews)
+        hashScriptIntegrity langViews rdmrs (TxDats mempty :: TxDats ConwayEra)
 
   let (feeIn, feeOut) = case utxos of
         (x : _) -> x
@@ -157,7 +156,7 @@ submitWithdrawal _prov sub pp utxos keyCbor valueCbor = do
       finalBody =
         (mkBasicTxBody :: TxBody ConwayEra)
           & withdrawalsTxBodyL .~ Withdrawals (Map.singleton rewardAcct mempty)
-          & scriptIntegrityHashTxBodyL .~ SJust integrity
+          & scriptIntegrityHashTxBodyL .~ integrity
           & collateralInputsTxBodyL .~ Set.singleton feeIn
           & inputsTxBodyL .~ Set.singleton feeIn
           & outputsTxBodyL .~ StrictSeq.singleton changeOut

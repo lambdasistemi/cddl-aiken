@@ -1,7 +1,7 @@
 {
   inputs = {
     cardano-node-clients = {
-      url = "github:lambdasistemi/cardano-node-clients/53c6350a2639c0a8f8977a2c4f7e9240e467c85f";
+      url = "github:lambdasistemi/cardano-node-clients";
     };
     haskellNix.follows = "cardano-node-clients/haskellNix";
     nixpkgs.follows = "cardano-node-clients/nixpkgs";
