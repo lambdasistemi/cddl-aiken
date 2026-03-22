@@ -1,7 +1,8 @@
 {
   inputs = {
-    cardano-node-clients.url = "github:lambdasistemi/cardano-node-clients";
-    cardano-node.follows = "cardano-node-clients/cardano-node";
+    cardano-node-clients = {
+      url = "github:lambdasistemi/cardano-node-clients/53c6350a2639c0a8f8977a2c4f7e9240e467c85f";
+    };
     haskellNix.follows = "cardano-node-clients/haskellNix";
     nixpkgs.follows = "cardano-node-clients/nixpkgs";
     flake-parts.url = "github:hercules-ci/flake-parts";
@@ -10,7 +11,7 @@
   };
 
   outputs = inputs@{ self, nixpkgs, flake-parts, haskellNix, iohkNix, CHaP
-    , cardano-node, cardano-node-clients, ... }:
+    , cardano-node-clients, ... }:
     flake-parts.lib.mkFlake { inherit inputs; } {
       systems = [ "x86_64-linux" ];
       perSystem = { system, ... }:
@@ -24,7 +25,7 @@
               iohkNix.overlays.cardano-lib
             ];
           };
-          cardano-node-pkgs = cardano-node.packages.${system};
+          cardano-node-pkgs = cardano-node-clients.inputs.cardano-node.packages.${system};
           devnet-genesis = cardano-node-clients.packages.${system}.devnet-genesis;
           project = pkgs.haskell-nix.cabalProject' {
             src = ./.;

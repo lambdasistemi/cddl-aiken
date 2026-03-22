@@ -68,16 +68,7 @@ test-suite e2e-tests
   other-modules:
     CddlAiken.E2E.WithdrawalSpec
   build-depends:
-    , aeson
     , base                          >=4.18 && <5
-    , bytestring
-    , cardano-crypto-class
-    , cardano-ledger-api
-    , cardano-ledger-conway
-    , cardano-ledger-core
     , cardano-node-clients
     , cardano-node-clients:devnet
-    , containers
     , hspec                         >=2.0  && <3
-    , microlens
-    , serialise
