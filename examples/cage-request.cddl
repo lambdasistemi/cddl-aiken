@@ -1,0 +1,12 @@
+; Example CDDL schema for an MPFS cage request
+; Keys and values are validated as CBOR at mint time
+
+key = {
+  "owner" : bstr .size 28
+}
+
+value = {
+  "amount"  : uint,
+  "payload" : bstr,
+  ? "label" : tstr
+}
