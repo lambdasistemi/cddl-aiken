@@ -27,6 +27,9 @@ jobs:
       - name: HLint
         run: nix develop --quiet -c just hlint
 
+      - name: Update package list
+        run: nix develop --quiet -c cabal update
+
       - name: Build
         run: nix develop --quiet -c just build
 
