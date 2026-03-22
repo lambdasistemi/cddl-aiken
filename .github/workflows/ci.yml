@@ -33,5 +33,8 @@ jobs:
       - name: Build
         run: nix develop --quiet -c just build
 
-      - name: Test
+      - name: Unit tests
         run: nix develop --quiet -c cabal test unit-tests -O0 --test-show-details=direct
+
+      - name: E2E tests
+        run: nix develop --quiet -c cabal test cddl-e2e -O0 --test-show-details=direct
