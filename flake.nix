@@ -41,6 +41,8 @@
               };
               buildInputs = [
                 pkgs.just
+                pkgs.curl
+                pkgs.cacert
                 cardano-node-pkgs.cardano-node
               ];
               shellHook = ''
