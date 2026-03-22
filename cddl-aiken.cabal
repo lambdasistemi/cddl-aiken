@@ -69,6 +69,18 @@ test-suite e2e-tests
     CddlAiken.E2E.WithdrawalSpec
   build-depends:
     , base                          >=4.18 && <5
+    , base16-bytestring
+    , bytestring
+    , cardano-ledger-alonzo
+    , cardano-ledger-api
+    , cardano-ledger-conway
+    , cardano-ledger-core
+    , cardano-ledger-shelley
     , cardano-node-clients
     , cardano-node-clients:devnet
+    , containers
     , hspec                         >=2.0  && <3
+    , microlens
+    , cardano-ledger-conway
+    , cardano-strict-containers
+    , plutus-ledger-api
