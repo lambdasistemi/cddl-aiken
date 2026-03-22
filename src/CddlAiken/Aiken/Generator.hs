@@ -18,6 +18,7 @@ import Data.ByteString (ByteString)
 import Data.ByteString qualified as BS
 import Data.Char (chr, ord)
 import Data.List (sortOn)
+import Data.Maybe (isNothing)
 import Data.Text (Text)
 import Data.Text qualified as T
 import Data.Text.Encoding qualified as TE
@@ -35,16 +36,19 @@ generateAiken schema =
 generateValidator :: Schema -> Text
 generateValidator schema =
   T.unlines
-    [ "use cbor.{ParseResult, parse_map_header, parse_array_header,"
+    [ "use aiken/builtin"
+    , "use cardano/address.{Credential}"
+    , "use cardano/transaction.{Transaction}"
+    , "use cbor.{ParseResult, parse_map_header, parse_array_header,"
     , "          parse_uint, parse_int, parse_tstr, parse_bstr,"
     , "          parse_bool, parse_null, skip_value}"
     , ""
     , "/// Withdrawal validator that validates CBOR-encoded request"
     , "/// key and value against a CDDL schema."
     , "validator cddl_schema {"
-    , "  withdraw(_redeemer: Data, _ctx: Data) {"
+    , "  withdraw(redeemer: Data, _account: Credential, _self: Transaction) {"
     , "    // Redeemer: (key_bytes, value_bytes)"
-    , "    expect (key_bytes, value_bytes): (ByteArray, ByteArray) = _redeemer"
+    , "    expect (key_bytes, value_bytes): (ByteArray, ByteArray) = redeemer"
     , ""
     , "    // Validate key"
     , "    let key_end = validate_key(key_bytes, 0)"
@@ -76,25 +80,29 @@ generateSchemaFn name schema =
 generateBody :: CborSchema -> Text
 generateBody schema = case schema of
   CUint constraint ->
-    T.unlines $
-      ["let ParseResult { value: v, pos } = parse_uint(bytes, pos)"]
-        ++ constraintChecks "v" constraint
-        ++ ["pos"]
+    let vname = if isNothing constraint then "_v" else "v"
+     in T.unlines $
+          ["let ParseResult { value: " <> vname <> ", pos } = parse_uint(bytes, pos)"]
+            ++ constraintChecks "v" constraint
+            ++ ["pos"]
   CInt constraint ->
-    T.unlines $
-      ["let ParseResult { value: v, pos } = parse_int(bytes, pos)"]
-        ++ constraintChecks "v" constraint
-        ++ ["pos"]
+    let vname = if isNothing constraint then "_v" else "v"
+     in T.unlines $
+          ["let ParseResult { value: " <> vname <> ", pos } = parse_int(bytes, pos)"]
+            ++ constraintChecks "v" constraint
+            ++ ["pos"]
   CTstr sizeConstraint ->
-    T.unlines $
-      ["let ParseResult { value: v, pos } = parse_tstr(bytes, pos)"]
-        ++ sizeChecks "v" sizeConstraint
-        ++ ["pos"]
+    let vname = if isNothing sizeConstraint then "_v" else "v"
+     in T.unlines $
+          ["let ParseResult { value: " <> vname <> ", pos } = parse_tstr(bytes, pos)"]
+            ++ sizeChecks "v" sizeConstraint
+            ++ ["pos"]
   CBstr sizeConstraint ->
-    T.unlines $
-      ["let ParseResult { value: v, pos } = parse_bstr(bytes, pos)"]
-        ++ sizeChecks "v" sizeConstraint
-        ++ ["pos"]
+    let vname = if isNothing sizeConstraint then "_v" else "v"
+     in T.unlines $
+          ["let ParseResult { value: " <> vname <> ", pos } = parse_bstr(bytes, pos)"]
+            ++ sizeChecks "v" sizeConstraint
+            ++ ["pos"]
   CBool ->
     T.unlines
       [ "let ParseResult { pos, .. } = parse_bool(bytes, pos)"
@@ -256,11 +264,16 @@ aikenToml =
   T.unlines
     [ "name = \"generated/cddl_schema\""
     , "version = \"0.0.1\""
-    , "compiler = \"v1.1.16\""
+    , "compiler = \"v1.1.21\""
     , "plutus = \"v3\""
     , ""
     , "[repository]"
     , "user = \"generated\""
     , "project = \"cddl_schema\""
     , "platform = \"github\""
+    , ""
+    , "[[dependencies]]"
+    , "name = \"aiken-lang/stdlib\""
+    , "version = \"v3.0.0\""
+    , "source = \"github\""
     ]
