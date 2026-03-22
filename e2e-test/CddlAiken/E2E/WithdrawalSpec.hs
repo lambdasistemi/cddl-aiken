@@ -4,10 +4,10 @@ module CddlAiken.E2E.WithdrawalSpec (spec) where
 
 import Cardano.Ledger.Address (RewardAccount (..))
 import Cardano.Ledger.Alonzo.PParams (getLanguageView)
-import Cardano.Ledger.Alonzo.Scripts (AsIx (..), fromPlutusScript, mkPlutusScript)
+import Cardano.Ledger.Alonzo.Scripts (AsIx (..), ExUnits (..), fromPlutusScript, mkPlutusScript)
 import Cardano.Ledger.Alonzo.Tx (ScriptIntegrity (..), hashScriptIntegrity)
-import Cardano.Ledger.Alonzo.TxWits (AlonzoTxWits (..), Redeemers (..), TxDats (..))
-import Cardano.Ledger.Api.Tx (Tx, bodyTxL, mkBasicTx)
+import Cardano.Ledger.Alonzo.TxWits (Redeemers (..), TxDats (..), rdmrsTxWitsL)
+import Cardano.Ledger.Api.Tx (bodyTxL, mkBasicTx, witsTxL)
 import Cardano.Ledger.Api.Tx.Out (TxOut, coinTxOutL, mkBasicTxOut)
 import Cardano.Ledger.Api.Tx.Body
   ( TxBody
@@ -26,14 +26,13 @@ import Cardano.Ledger.Coin (Coin (..), unCoin)
 import Cardano.Ledger.Conway (ConwayEra)
 import Cardano.Ledger.Conway.Scripts (ConwayPlutusPurpose (..))
 import Cardano.Ledger.Conway.TxCert (ConwayDelegCert (..), ConwayTxCert (..))
-import Cardano.Ledger.Core (PParams, Script, ScriptHash, hashScript)
+import Cardano.Ledger.Core (PParams, Script, ScriptHash, hashScript, scriptTxWitsL)
 import Cardano.Ledger.Credential (Credential (..), StakeCredential)
 import Cardano.Ledger.TxIn (TxIn)
 import Cardano.Ledger.Plutus.Data (Data (..))
 import Cardano.Ledger.Plutus.Language (Language (..), Plutus (..), PlutusBinary (..))
 import Cardano.Ledger.Shelley.API (Withdrawals (..))
 import Cardano.Node.Client.Balance (balanceTx)
-import Cardano.Ledger.Alonzo.Tx (AlonzoTx (..), IsValid (..))
 import Cardano.Node.Client.E2E.Setup
   ( addKeyWitness
   , genesisAddr
@@ -46,7 +45,6 @@ import Cardano.Node.Client.N2C.Types (LSQChannel, LTxSChannel)
 import Cardano.Node.Client.Provider (Provider (..))
 import Cardano.Node.Client.Submitter (SubmitResult (..), Submitter, submitTx)
 import Control.Concurrent (threadDelay)
-import Unsafe.Coerce (unsafeCoerce)
 import Data.ByteString qualified as BS
 import Data.ByteString.Base16 qualified as B16
 import Data.ByteString.Short qualified as SBS
@@ -135,11 +133,13 @@ submitWithdrawal _prov sub pp utxos keyCbor valueCbor = do
       rewardAcct = RewardAccount Testnet stakeCred
       redeemer = PV1.List [PV1.B keyCbor, PV1.B valueCbor]
 
+      -- Use generous ExUnits (will be overcharged but sufficient for test)
+      exUnits = ExUnits 10_000_000 10_000_000_000
       rdmrs =
         Redeemers $
           Map.singleton
             (ConwayRewarding (AsIx 0))
-            (Data redeemer, mempty)
+            (Data redeemer, exUnits)
 
       langViews = Set.singleton (getLanguageView pp PlutusV3)
       integrity =
@@ -163,28 +163,13 @@ submitWithdrawal _prov sub pp utxos keyCbor valueCbor = do
           & outputsTxBodyL .~ StrictSeq.singleton changeOut
           & feeTxBodyL .~ fee
 
-      -- Construct witnesses directly via pattern (avoids MemoBytes staleness)
-      wits =
-        AlonzoTxWits
-          { txwitsVKey = mempty
-          , txwitsBoot = mempty
-          , txscripts = Map.singleton scriptHash script
-          , txdats = TxDats mempty
-          , txrdmrs = rdmrs
-          }
-
-      -- Construct tx directly using AlonzoTx to avoid MemoBytes staleness
-      -- from lens modifications on mkBasicTx
-      alonzoTx =
-        AlonzoTx
-          { atBody = finalBody
-          , atWits = wits
-          , atIsValid = IsValid True
-          , atAuxData = SNothing
-          }
-      -- Use unsafeCoerce to wrap AlonzoTx as Tx ConwayEra
-      -- (MkConwayTx constructor is not exported)
-      signedTx = addKeyWitness genesisSignKey (unsafeCoerce alonzoTx :: Tx ConwayEra)
+      tx =
+        mkBasicTx finalBody
+          & witsTxL . scriptTxWitsL .~ Map.singleton scriptHash script
+          & witsTxL . rdmrsTxWitsL .~ rdmrs
+  putStrLn $ "Before sign - scripts: " <> show (Map.size (tx ^. witsTxL . scriptTxWitsL))
+  let signedTx = addKeyWitness genesisSignKey tx
+  putStrLn $ "After sign - scripts: " <> show (Map.size (signedTx ^. witsTxL . scriptTxWitsL))
   submitTx sub signedTx
 
 -- | Bracket that starts the local devnet and provides channels
