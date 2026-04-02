@@ -1,0 +1,960 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+      
+      
+        <link rel="canonical" href="https://lambdasistemi.github.io/cddl-aiken/design/">
+      
+      
+      
+      
+        
+      
+      
+      <link rel="icon" href="../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.0">
+    
+    
+      
+        <title>cddl-aiken: CDDL to Aiken Withdrawal Validator Compiler - cddl-aiken</title>
+      
+    
+    
+      <link rel="stylesheet" href="../assets/stylesheets/main.618322db.min.css">
+      
+        
+        <link rel="stylesheet" href="../assets/stylesheets/palette.ab4e12ef.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+    <script>__md_scope=new URL("..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="slate" data-md-color-primary="indigo" data-md-color-accent="indigo">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#cddl-aiken-cddl-to-aiken-withdrawal-validator-compiler" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+  
+
+<header class="md-header md-header--shadow" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href=".." title="cddl-aiken" class="md-header__button md-logo" aria-label="cddl-aiken" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            cddl-aiken
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              cddl-aiken: CDDL to Aiken Withdrawal Validator Compiler
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+    
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/lambdasistemi/cddl-aiken" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    GitHub
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+
+  
+
+<nav class="md-nav md-nav--primary md-nav--integrated" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href=".." title="cddl-aiken" class="md-nav__button md-logo" aria-label="cddl-aiken" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    cddl-aiken
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/lambdasistemi/cddl-aiken" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    GitHub
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href=".." class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Home
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../getting-started/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Getting Started
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../cddl-reference/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    CDDL Reference
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../architecture/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Architecture
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../generated-code/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Generated Code
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../e2e-testing/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    E2E Testing
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+                
+
+
+
+  
+
+
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+  
+  
+
+
+<h1 id="cddl-aiken-cddl-to-aiken-withdrawal-validator-compiler">cddl-aiken: CDDL to Aiken Withdrawal Validator Compiler</h1>
+<h2 id="problem">Problem</h2>
+<p>MPFS cages store arbitrary key/value pairs as CBOR byte strings.
+Without schema enforcement, any request can write any shape of data.
+We need on-chain validation that request keys and values conform to a
+declared schema — like a JSON Schema but for CBOR on Cardano.</p>
+<h2 id="architecture">Architecture</h2>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a>                    Oracle (off-chain)
+<a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a>                    ┌─────────────────────────┐
+<a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a>  .cddl file ──────│  cddl-aiken compiler    │
+<a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a>                    │  (Haskell)              │
+<a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a>                    │         │               │
+<a id="__codelineno-0-6" name="__codelineno-0-6" href="#__codelineno-0-6"></a>                    │         ▼               │
+<a id="__codelineno-0-7" name="__codelineno-0-7" href="#__codelineno-0-7"></a>                    │  Aiken source code      │
+<a id="__codelineno-0-8" name="__codelineno-0-8" href="#__codelineno-0-8"></a>                    │         │               │
+<a id="__codelineno-0-9" name="__codelineno-0-9" href="#__codelineno-0-9"></a>                    │    aiken build          │
+<a id="__codelineno-0-10" name="__codelineno-0-10" href="#__codelineno-0-10"></a>                    │         │               │
+<a id="__codelineno-0-11" name="__codelineno-0-11" href="#__codelineno-0-11"></a>                    │         ▼               │
+<a id="__codelineno-0-12" name="__codelineno-0-12" href="#__codelineno-0-12"></a>                    │  Plutus script (UPLC)   │
+<a id="__codelineno-0-13" name="__codelineno-0-13" href="#__codelineno-0-13"></a>                    └────────┬────────────────┘
+<a id="__codelineno-0-14" name="__codelineno-0-14" href="#__codelineno-0-14"></a>                             │
+<a id="__codelineno-0-15" name="__codelineno-0-15" href="#__codelineno-0-15"></a>                             ▼ published on-chain
+<a id="__codelineno-0-16" name="__codelineno-0-16" href="#__codelineno-0-16"></a>              ┌──────────────────────────────────┐
+<a id="__codelineno-0-17" name="__codelineno-0-17" href="#__codelineno-0-17"></a>              │  MPFS Cage Validator              │
+<a id="__codelineno-0-18" name="__codelineno-0-18" href="#__codelineno-0-18"></a>              │  (parameterized by script hash)   │
+<a id="__codelineno-0-19" name="__codelineno-0-19" href="#__codelineno-0-19"></a>              │                                   │
+<a id="__codelineno-0-20" name="__codelineno-0-20" href="#__codelineno-0-20"></a>              │  At mint time:                    │
+<a id="__codelineno-0-21" name="__codelineno-0-21" href="#__codelineno-0-21"></a>              │  1. Check withdrawal present      │
+<a id="__codelineno-0-22" name="__codelineno-0-22" href="#__codelineno-0-22"></a>              │  2. Withdrawal validator runs     │
+<a id="__codelineno-0-23" name="__codelineno-0-23" href="#__codelineno-0-23"></a>              │     → parses request key CBOR     │
+<a id="__codelineno-0-24" name="__codelineno-0-24" href="#__codelineno-0-24"></a>              │     → parses request value CBOR   │
+<a id="__codelineno-0-25" name="__codelineno-0-25" href="#__codelineno-0-25"></a>              │     → validates structure          │
+<a id="__codelineno-0-26" name="__codelineno-0-26" href="#__codelineno-0-26"></a>              │  3. If validator passes → mint ok │
+<a id="__codelineno-0-27" name="__codelineno-0-27" href="#__codelineno-0-27"></a>              └──────────────────────────────────┘
+</code></pre></div>
+<h3 id="flow">Flow</h3>
+<ol>
+<li>Schema author writes a <code>.cddl</code> file defining key and value shapes</li>
+<li>Oracle runs <code>cddl-aiken</code> compiler → produces Aiken withdrawal validator source</li>
+<li>Oracle runs <code>aiken build</code> → produces Plutus script</li>
+<li>Script hash is used to parameterize the MPFS cage validator</li>
+<li>At mint time, the withdrawal validator is included in the transaction</li>
+<li>It receives the request's key and value <code>ByteArray</code>s</li>
+<li>It parses the CBOR bytes and validates they match the schema</li>
+<li>If validation fails, the transaction fails</li>
+</ol>
+<h2 id="cddl-subset">CDDL Subset</h2>
+<p>We target a JSON-like subset of CDDL (RFC 8610):</p>
+<h3 id="supported-types">Supported Types</h3>
+<table>
+<thead>
+<tr>
+<th>CDDL Type</th>
+<th>CBOR Major Type</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>uint</code></td>
+<td>0</td>
+<td>Unsigned integer</td>
+</tr>
+<tr>
+<td><code>int</code></td>
+<td>0, 1</td>
+<td>Signed integer</td>
+</tr>
+<tr>
+<td><code>tstr</code></td>
+<td>3</td>
+<td>Text string (UTF-8)</td>
+</tr>
+<tr>
+<td><code>bstr</code></td>
+<td>2</td>
+<td>Byte string</td>
+</tr>
+<tr>
+<td><code>bool</code></td>
+<td>7 (20, 21)</td>
+<td>Boolean</td>
+</tr>
+<tr>
+<td><code>null</code></td>
+<td>7 (22)</td>
+<td>Null</td>
+</tr>
+</tbody>
+</table>
+<h3 id="supported-structures">Supported Structures</h3>
+<p><strong>Maps with named keys</strong> (the core use case):</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="nc">request-key</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{</span>
+<a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a><span class="w">  </span><span class="s2">&quot;owner&quot;</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="nb">bstr</span><span class="p">,</span>
+<a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a><span class="w">  </span><span class="s2">&quot;slot&quot;</span><span class="w">  </span><span class="p">:</span><span class="w"> </span><span class="nb">uint</span>
+<a id="__codelineno-1-4" name="__codelineno-1-4" href="#__codelineno-1-4"></a><span class="p">}</span>
+<a id="__codelineno-1-5" name="__codelineno-1-5" href="#__codelineno-1-5"></a>
+<a id="__codelineno-1-6" name="__codelineno-1-6" href="#__codelineno-1-6"></a><span class="nc">request-value</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{</span>
+<a id="__codelineno-1-7" name="__codelineno-1-7" href="#__codelineno-1-7"></a><span class="w">  </span><span class="s2">&quot;amount&quot;</span><span class="w">  </span><span class="p">:</span><span class="w"> </span><span class="nb">uint</span><span class="p">,</span>
+<a id="__codelineno-1-8" name="__codelineno-1-8" href="#__codelineno-1-8"></a><span class="w">  </span><span class="s2">&quot;payload&quot;</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="nb">bstr</span><span class="p">,</span>
+<a id="__codelineno-1-9" name="__codelineno-1-9" href="#__codelineno-1-9"></a><span class="w">  </span><span class="o">?</span><span class="w"> </span><span class="s2">&quot;memo&quot;</span><span class="w">  </span><span class="p">:</span><span class="w"> </span><span class="nb">tstr</span>
+<a id="__codelineno-1-10" name="__codelineno-1-10" href="#__codelineno-1-10"></a><span class="p">}</span>
+</code></pre></div>
+<p>Key names are text strings and must match exactly. This is the
+JSON-Schema-like property: known keys, typed values.</p>
+<p><strong>Arrays</strong> (positional):</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span class="nc">point</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">[</span><span class="nb">uint</span><span class="p">,</span><span class="w"> </span><span class="nb">uint</span><span class="p">]</span>
+</code></pre></div>
+<p><strong>Choices</strong>:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a><span class="nc">action</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;insert&quot;</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="s2">&quot;delete&quot;</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="s2">&quot;update&quot;</span>
+</code></pre></div>
+<p><strong>Occurrence indicators</strong>:</p>
+<table>
+<thead>
+<tr>
+<th>Indicator</th>
+<th>Meaning</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>(none)</td>
+<td>Exactly 1 (required)</td>
+</tr>
+<tr>
+<td><code>?</code></td>
+<td>0 or 1 (optional)</td>
+</tr>
+<tr>
+<td><code>*</code></td>
+<td>0 or more</td>
+</tr>
+<tr>
+<td><code>+</code></td>
+<td>1 or more</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Semantic constraints</strong>:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a><span class="c1">; Value ranges</span>
+<a id="__codelineno-4-2" name="__codelineno-4-2" href="#__codelineno-4-2"></a><span class="nc">age</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">uint</span><span class="w"> </span><span class="ow">.le</span><span class="w"> </span><span class="mi">150</span>
+<a id="__codelineno-4-3" name="__codelineno-4-3" href="#__codelineno-4-3"></a>
+<a id="__codelineno-4-4" name="__codelineno-4-4" href="#__codelineno-4-4"></a><span class="c1">; Size constraints</span>
+<a id="__codelineno-4-5" name="__codelineno-4-5" href="#__codelineno-4-5"></a><span class="nc">hash</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">bstr</span><span class="w"> </span><span class="ow">.size</span><span class="w"> </span><span class="mi">32</span>
+<a id="__codelineno-4-6" name="__codelineno-4-6" href="#__codelineno-4-6"></a><span class="nc">name</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">tstr</span><span class="w"> </span><span class="ow">.size</span><span class="w"> </span><span class="p">(</span><span class="mi">1</span><span class="o">..</span><span class="mi">64</span><span class="p">)</span>
+</code></pre></div>
+<h3 id="not-supported">NOT Supported</h3>
+<ul>
+<li>Tags (<code>#6.N(type)</code>)</li>
+<li>Floating point</li>
+<li>Generics</li>
+<li>Sockets/plugs</li>
+<li><code>.cbor</code> / <code>.cborseq</code> controls</li>
+<li><code>.regexp</code></li>
+<li>Nested CBOR (CBOR-in-CBOR beyond the top level)</li>
+</ul>
+<h2 id="compiler-design">Compiler Design</h2>
+<h3 id="input">Input</h3>
+<p>A <code>.cddl</code> file with two top-level rules: <code>key</code> and <code>value</code>.</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a><span class="nc">key</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{</span>
+<a id="__codelineno-5-2" name="__codelineno-5-2" href="#__codelineno-5-2"></a><span class="w">  </span><span class="s2">&quot;owner&quot;</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="nb">bstr</span><span class="w"> </span><span class="ow">.size</span><span class="w"> </span><span class="mi">28</span>
+<a id="__codelineno-5-3" name="__codelineno-5-3" href="#__codelineno-5-3"></a><span class="p">}</span>
+<a id="__codelineno-5-4" name="__codelineno-5-4" href="#__codelineno-5-4"></a>
+<a id="__codelineno-5-5" name="__codelineno-5-5" href="#__codelineno-5-5"></a><span class="nc">value</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{</span>
+<a id="__codelineno-5-6" name="__codelineno-5-6" href="#__codelineno-5-6"></a><span class="w">  </span><span class="s2">&quot;amount&quot;</span><span class="w">   </span><span class="p">:</span><span class="w"> </span><span class="nb">uint</span><span class="p">,</span>
+<a id="__codelineno-5-7" name="__codelineno-5-7" href="#__codelineno-5-7"></a><span class="w">  </span><span class="s2">&quot;payload&quot;</span><span class="w">  </span><span class="p">:</span><span class="w"> </span><span class="nb">bstr</span><span class="p">,</span>
+<a id="__codelineno-5-8" name="__codelineno-5-8" href="#__codelineno-5-8"></a><span class="w">  </span><span class="o">?</span><span class="w"> </span><span class="s2">&quot;label&quot;</span><span class="w">  </span><span class="p">:</span><span class="w"> </span><span class="nb">tstr</span>
+<a id="__codelineno-5-9" name="__codelineno-5-9" href="#__codelineno-5-9"></a><span class="p">}</span>
+</code></pre></div>
+<h3 id="output">Output</h3>
+<p>An Aiken project containing a withdrawal validator that:</p>
+<ol>
+<li>Receives key and value as <code>ByteArray</code> via the redeemer</li>
+<li>Parses CBOR bytes</li>
+<li>Validates structure and constraints</li>
+<li>Fails via <code>expect</code> on any mismatch</li>
+</ol>
+<h3 id="haskell-pipeline">Haskell Pipeline</h3>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a>Parse CDDL          →  CDDL AST
+<a id="__codelineno-6-2" name="__codelineno-6-2" href="#__codelineno-6-2"></a>                         │
+<a id="__codelineno-6-3" name="__codelineno-6-3" href="#__codelineno-6-3"></a>Validate subset      →  Reject unsupported features
+<a id="__codelineno-6-4" name="__codelineno-6-4" href="#__codelineno-6-4"></a>                         │
+<a id="__codelineno-6-5" name="__codelineno-6-5" href="#__codelineno-6-5"></a>Lower to IR          →  CborSchema (internal representation)
+<a id="__codelineno-6-6" name="__codelineno-6-6" href="#__codelineno-6-6"></a>                         │
+<a id="__codelineno-6-7" name="__codelineno-6-7" href="#__codelineno-6-7"></a>Generate Aiken       →  Aiken source text
+</code></pre></div>
+<h3 id="internal-representation">Internal Representation</h3>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-7-1" name="__codelineno-7-1" href="#__codelineno-7-1"></a><span class="kr">data</span><span class="w"> </span><span class="kt">CborSchema</span>
+<a id="__codelineno-7-2" name="__codelineno-7-2" href="#__codelineno-7-2"></a><span class="w">  </span><span class="ow">=</span><span class="w"> </span><span class="kt">CUint</span><span class="w"> </span><span class="p">(</span><span class="kt">Maybe</span><span class="w"> </span><span class="kt">Constraint</span><span class="p">)</span>
+<a id="__codelineno-7-3" name="__codelineno-7-3" href="#__codelineno-7-3"></a><span class="w">  </span><span class="o">|</span><span class="w"> </span><span class="kt">CInt</span><span class="w"> </span><span class="p">(</span><span class="kt">Maybe</span><span class="w"> </span><span class="kt">Constraint</span><span class="p">)</span>
+<a id="__codelineno-7-4" name="__codelineno-7-4" href="#__codelineno-7-4"></a><span class="w">  </span><span class="o">|</span><span class="w"> </span><span class="kt">CTstr</span><span class="w"> </span><span class="p">(</span><span class="kt">Maybe</span><span class="w"> </span><span class="kt">SizeConstraint</span><span class="p">)</span>
+<a id="__codelineno-7-5" name="__codelineno-7-5" href="#__codelineno-7-5"></a><span class="w">  </span><span class="o">|</span><span class="w"> </span><span class="kt">CBstr</span><span class="w"> </span><span class="p">(</span><span class="kt">Maybe</span><span class="w"> </span><span class="kt">SizeConstraint</span><span class="p">)</span>
+<a id="__codelineno-7-6" name="__codelineno-7-6" href="#__codelineno-7-6"></a><span class="w">  </span><span class="o">|</span><span class="w"> </span><span class="kt">CBool</span>
+<a id="__codelineno-7-7" name="__codelineno-7-7" href="#__codelineno-7-7"></a><span class="w">  </span><span class="o">|</span><span class="w"> </span><span class="kt">CNull</span>
+<a id="__codelineno-7-8" name="__codelineno-7-8" href="#__codelineno-7-8"></a><span class="w">  </span><span class="o">|</span><span class="w"> </span><span class="kt">CMap</span><span class="w"> </span><span class="p">[(</span><span class="kt">Key</span><span class="p">,</span><span class="w"> </span><span class="kt">Occurrence</span><span class="p">,</span><span class="w"> </span><span class="kt">CborSchema</span><span class="p">)]</span>
+<a id="__codelineno-7-9" name="__codelineno-7-9" href="#__codelineno-7-9"></a><span class="w">  </span><span class="o">|</span><span class="w"> </span><span class="kt">CArray</span><span class="w"> </span><span class="p">[</span><span class="kt">CborSchema</span><span class="p">]</span>
+<a id="__codelineno-7-10" name="__codelineno-7-10" href="#__codelineno-7-10"></a><span class="w">  </span><span class="o">|</span><span class="w"> </span><span class="kt">CChoice</span><span class="w"> </span><span class="p">[</span><span class="kt">CborSchema</span><span class="p">]</span>
+<a id="__codelineno-7-11" name="__codelineno-7-11" href="#__codelineno-7-11"></a>
+<a id="__codelineno-7-12" name="__codelineno-7-12" href="#__codelineno-7-12"></a><span class="kr">data</span><span class="w"> </span><span class="kt">Key</span>
+<a id="__codelineno-7-13" name="__codelineno-7-13" href="#__codelineno-7-13"></a><span class="w">  </span><span class="ow">=</span><span class="w"> </span><span class="kt">TextKey</span><span class="w"> </span><span class="kt">Text</span><span class="w">    </span><span class="c1">-- named map key (the common case)</span>
+<a id="__codelineno-7-14" name="__codelineno-7-14" href="#__codelineno-7-14"></a>
+<a id="__codelineno-7-15" name="__codelineno-7-15" href="#__codelineno-7-15"></a><span class="kr">data</span><span class="w"> </span><span class="kt">Occurrence</span>
+<a id="__codelineno-7-16" name="__codelineno-7-16" href="#__codelineno-7-16"></a><span class="w">  </span><span class="ow">=</span><span class="w"> </span><span class="kt">Required</span><span class="w">        </span><span class="c1">-- exactly 1</span>
+<a id="__codelineno-7-17" name="__codelineno-7-17" href="#__codelineno-7-17"></a><span class="w">  </span><span class="o">|</span><span class="w"> </span><span class="kt">Optional</span><span class="w">        </span><span class="c1">-- ? (0 or 1)</span>
+<a id="__codelineno-7-18" name="__codelineno-7-18" href="#__codelineno-7-18"></a><span class="w">  </span><span class="o">|</span><span class="w"> </span><span class="kt">ZeroOrMore</span><span class="w">      </span><span class="c1">-- *</span>
+<a id="__codelineno-7-19" name="__codelineno-7-19" href="#__codelineno-7-19"></a><span class="w">  </span><span class="o">|</span><span class="w"> </span><span class="kt">OneOrMore</span><span class="w">       </span><span class="c1">-- +</span>
+<a id="__codelineno-7-20" name="__codelineno-7-20" href="#__codelineno-7-20"></a>
+<a id="__codelineno-7-21" name="__codelineno-7-21" href="#__codelineno-7-21"></a><span class="kr">data</span><span class="w"> </span><span class="kt">Constraint</span>
+<a id="__codelineno-7-22" name="__codelineno-7-22" href="#__codelineno-7-22"></a><span class="w">  </span><span class="ow">=</span><span class="w"> </span><span class="kt">Le</span><span class="w"> </span><span class="kt">Integer</span>
+<a id="__codelineno-7-23" name="__codelineno-7-23" href="#__codelineno-7-23"></a><span class="w">  </span><span class="o">|</span><span class="w"> </span><span class="kt">Ge</span><span class="w"> </span><span class="kt">Integer</span>
+<a id="__codelineno-7-24" name="__codelineno-7-24" href="#__codelineno-7-24"></a><span class="w">  </span><span class="o">|</span><span class="w"> </span><span class="kt">Range</span><span class="w"> </span><span class="kt">Integer</span><span class="w"> </span><span class="kt">Integer</span>
+<a id="__codelineno-7-25" name="__codelineno-7-25" href="#__codelineno-7-25"></a>
+<a id="__codelineno-7-26" name="__codelineno-7-26" href="#__codelineno-7-26"></a><span class="kr">data</span><span class="w"> </span><span class="kt">SizeConstraint</span>
+<a id="__codelineno-7-27" name="__codelineno-7-27" href="#__codelineno-7-27"></a><span class="w">  </span><span class="ow">=</span><span class="w"> </span><span class="kt">ExactSize</span><span class="w"> </span><span class="kt">Integer</span>
+<a id="__codelineno-7-28" name="__codelineno-7-28" href="#__codelineno-7-28"></a><span class="w">  </span><span class="o">|</span><span class="w"> </span><span class="kt">SizeRange</span><span class="w"> </span><span class="kt">Integer</span><span class="w"> </span><span class="kt">Integer</span>
+</code></pre></div>
+<h2 id="generated-aiken-structure">Generated Aiken Structure</h2>
+<h3 id="cbor-parsing-library">CBOR Parsing Library</h3>
+<p>The compiler emits a small CBOR parsing library alongside the
+validator. This library operates on <code>ByteArray</code> and tracks a
+cursor position.</p>
+<p>Core operations:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-8-1" name="__codelineno-8-1" href="#__codelineno-8-1"></a>/// Parse result: decoded value + remaining bytes position
+<a id="__codelineno-8-2" name="__codelineno-8-2" href="#__codelineno-8-2"></a>type ParseResult&lt;a&gt; {
+<a id="__codelineno-8-3" name="__codelineno-8-3" href="#__codelineno-8-3"></a>  value: a,
+<a id="__codelineno-8-4" name="__codelineno-8-4" href="#__codelineno-8-4"></a>  pos: Int,
+<a id="__codelineno-8-5" name="__codelineno-8-5" href="#__codelineno-8-5"></a>}
+<a id="__codelineno-8-6" name="__codelineno-8-6" href="#__codelineno-8-6"></a>
+<a id="__codelineno-8-7" name="__codelineno-8-7" href="#__codelineno-8-7"></a>/// Read CBOR major type and argument from bytes at position
+<a id="__codelineno-8-8" name="__codelineno-8-8" href="#__codelineno-8-8"></a>fn read_header(bytes: ByteArray, pos: Int) -&gt; ParseResult&lt;(Int, Int)&gt;
+<a id="__codelineno-8-9" name="__codelineno-8-9" href="#__codelineno-8-9"></a>
+<a id="__codelineno-8-10" name="__codelineno-8-10" href="#__codelineno-8-10"></a>/// Parse unsigned integer
+<a id="__codelineno-8-11" name="__codelineno-8-11" href="#__codelineno-8-11"></a>fn parse_uint(bytes: ByteArray, pos: Int) -&gt; ParseResult&lt;Int&gt;
+<a id="__codelineno-8-12" name="__codelineno-8-12" href="#__codelineno-8-12"></a>
+<a id="__codelineno-8-13" name="__codelineno-8-13" href="#__codelineno-8-13"></a>/// Parse text string
+<a id="__codelineno-8-14" name="__codelineno-8-14" href="#__codelineno-8-14"></a>fn parse_tstr(bytes: ByteArray, pos: Int) -&gt; ParseResult&lt;ByteArray&gt;
+<a id="__codelineno-8-15" name="__codelineno-8-15" href="#__codelineno-8-15"></a>
+<a id="__codelineno-8-16" name="__codelineno-8-16" href="#__codelineno-8-16"></a>/// Parse byte string
+<a id="__codelineno-8-17" name="__codelineno-8-17" href="#__codelineno-8-17"></a>fn parse_bstr(bytes: ByteArray, pos: Int) -&gt; ParseResult&lt;ByteArray&gt;
+<a id="__codelineno-8-18" name="__codelineno-8-18" href="#__codelineno-8-18"></a>
+<a id="__codelineno-8-19" name="__codelineno-8-19" href="#__codelineno-8-19"></a>/// Parse bool
+<a id="__codelineno-8-20" name="__codelineno-8-20" href="#__codelineno-8-20"></a>fn parse_bool(bytes: ByteArray, pos: Int) -&gt; ParseResult&lt;Bool&gt;
+<a id="__codelineno-8-21" name="__codelineno-8-21" href="#__codelineno-8-21"></a>
+<a id="__codelineno-8-22" name="__codelineno-8-22" href="#__codelineno-8-22"></a>/// Assert major type matches, fail otherwise
+<a id="__codelineno-8-23" name="__codelineno-8-23" href="#__codelineno-8-23"></a>fn expect_major(bytes: ByteArray, pos: Int, expected: Int) -&gt; ParseResult&lt;Int&gt;
+<a id="__codelineno-8-24" name="__codelineno-8-24" href="#__codelineno-8-24"></a>
+<a id="__codelineno-8-25" name="__codelineno-8-25" href="#__codelineno-8-25"></a>/// Parse map header, return number of entries
+<a id="__codelineno-8-26" name="__codelineno-8-26" href="#__codelineno-8-26"></a>fn parse_map_header(bytes: ByteArray, pos: Int) -&gt; ParseResult&lt;Int&gt;
+<a id="__codelineno-8-27" name="__codelineno-8-27" href="#__codelineno-8-27"></a>
+<a id="__codelineno-8-28" name="__codelineno-8-28" href="#__codelineno-8-28"></a>/// Parse array header, return number of elements
+<a id="__codelineno-8-29" name="__codelineno-8-29" href="#__codelineno-8-29"></a>fn parse_array_header(bytes: ByteArray, pos: Int) -&gt; ParseResult&lt;Int&gt;
+</code></pre></div>
+<h3 id="generated-validator-shape">Generated Validator Shape</h3>
+<p>For the example CDDL above, the compiler generates:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-9-1" name="__codelineno-9-1" href="#__codelineno-9-1"></a>use aiken/collection/list
+<a id="__codelineno-9-2" name="__codelineno-9-2" href="#__codelineno-9-2"></a>
+<a id="__codelineno-9-3" name="__codelineno-9-3" href="#__codelineno-9-3"></a>validator cddl_validator {
+<a id="__codelineno-9-4" name="__codelineno-9-4" href="#__codelineno-9-4"></a>  withdraw(_redeemer: Data, _ctx: Data) {
+<a id="__codelineno-9-5" name="__codelineno-9-5" href="#__codelineno-9-5"></a>    // Redeemer contains: (key_bytes, value_bytes)
+<a id="__codelineno-9-6" name="__codelineno-9-6" href="#__codelineno-9-6"></a>    expect (key_bytes, value_bytes): (ByteArray, ByteArray) = _redeemer
+<a id="__codelineno-9-7" name="__codelineno-9-7" href="#__codelineno-9-7"></a>
+<a id="__codelineno-9-8" name="__codelineno-9-8" href="#__codelineno-9-8"></a>    // Validate key
+<a id="__codelineno-9-9" name="__codelineno-9-9" href="#__codelineno-9-9"></a>    let key_end = validate_key(key_bytes, 0)
+<a id="__codelineno-9-10" name="__codelineno-9-10" href="#__codelineno-9-10"></a>    expect key_end == builtin.length_of_bytearray(key_bytes)
+<a id="__codelineno-9-11" name="__codelineno-9-11" href="#__codelineno-9-11"></a>
+<a id="__codelineno-9-12" name="__codelineno-9-12" href="#__codelineno-9-12"></a>    // Validate value
+<a id="__codelineno-9-13" name="__codelineno-9-13" href="#__codelineno-9-13"></a>    let value_end = validate_value(value_bytes, 0)
+<a id="__codelineno-9-14" name="__codelineno-9-14" href="#__codelineno-9-14"></a>    expect value_end == builtin.length_of_bytearray(value_bytes)
+<a id="__codelineno-9-15" name="__codelineno-9-15" href="#__codelineno-9-15"></a>
+<a id="__codelineno-9-16" name="__codelineno-9-16" href="#__codelineno-9-16"></a>    True
+<a id="__codelineno-9-17" name="__codelineno-9-17" href="#__codelineno-9-17"></a>  }
+<a id="__codelineno-9-18" name="__codelineno-9-18" href="#__codelineno-9-18"></a>}
+<a id="__codelineno-9-19" name="__codelineno-9-19" href="#__codelineno-9-19"></a>
+<a id="__codelineno-9-20" name="__codelineno-9-20" href="#__codelineno-9-20"></a>fn validate_key(bytes: ByteArray, pos: Int) -&gt; Int {
+<a id="__codelineno-9-21" name="__codelineno-9-21" href="#__codelineno-9-21"></a>  // Expect map with 1 entry
+<a id="__codelineno-9-22" name="__codelineno-9-22" href="#__codelineno-9-22"></a>  let ParseResult { value: count, pos } = parse_map_header(bytes, pos)
+<a id="__codelineno-9-23" name="__codelineno-9-23" href="#__codelineno-9-23"></a>  expect count == 1
+<a id="__codelineno-9-24" name="__codelineno-9-24" href="#__codelineno-9-24"></a>
+<a id="__codelineno-9-25" name="__codelineno-9-25" href="#__codelineno-9-25"></a>  // Key &quot;owner&quot; : bstr .size 28
+<a id="__codelineno-9-26" name="__codelineno-9-26" href="#__codelineno-9-26"></a>  let ParseResult { value: key_name, pos } = parse_tstr(bytes, pos)
+<a id="__codelineno-9-27" name="__codelineno-9-27" href="#__codelineno-9-27"></a>  expect key_name == &quot;owner&quot;
+<a id="__codelineno-9-28" name="__codelineno-9-28" href="#__codelineno-9-28"></a>  let ParseResult { value: owner, pos } = parse_bstr(bytes, pos)
+<a id="__codelineno-9-29" name="__codelineno-9-29" href="#__codelineno-9-29"></a>  expect builtin.length_of_bytearray(owner) == 28
+<a id="__codelineno-9-30" name="__codelineno-9-30" href="#__codelineno-9-30"></a>
+<a id="__codelineno-9-31" name="__codelineno-9-31" href="#__codelineno-9-31"></a>  pos
+<a id="__codelineno-9-32" name="__codelineno-9-32" href="#__codelineno-9-32"></a>}
+<a id="__codelineno-9-33" name="__codelineno-9-33" href="#__codelineno-9-33"></a>
+<a id="__codelineno-9-34" name="__codelineno-9-34" href="#__codelineno-9-34"></a>fn validate_value(bytes: ByteArray, pos: Int) -&gt; Int {
+<a id="__codelineno-9-35" name="__codelineno-9-35" href="#__codelineno-9-35"></a>  // Expect map with 2-3 entries (label is optional)
+<a id="__codelineno-9-36" name="__codelineno-9-36" href="#__codelineno-9-36"></a>  let ParseResult { value: count, pos } = parse_map_header(bytes, pos)
+<a id="__codelineno-9-37" name="__codelineno-9-37" href="#__codelineno-9-37"></a>  expect count &gt;= 2
+<a id="__codelineno-9-38" name="__codelineno-9-38" href="#__codelineno-9-38"></a>  expect count &lt;= 3
+<a id="__codelineno-9-39" name="__codelineno-9-39" href="#__codelineno-9-39"></a>
+<a id="__codelineno-9-40" name="__codelineno-9-40" href="#__codelineno-9-40"></a>  // Parse entries by iterating and matching keys
+<a id="__codelineno-9-41" name="__codelineno-9-41" href="#__codelineno-9-41"></a>  // (order may vary in CBOR maps)
+<a id="__codelineno-9-42" name="__codelineno-9-42" href="#__codelineno-9-42"></a>  validate_value_entries(bytes, pos, count, False, False, False)
+<a id="__codelineno-9-43" name="__codelineno-9-43" href="#__codelineno-9-43"></a>}
+</code></pre></div>
+<h3 id="map-key-ordering-canonical-cbor">Map Key Ordering (Canonical CBOR)</h3>
+<p>We require canonical CBOR (RFC 7049 §3.9): map keys must be in
+lexicographic order of their encoded bytes. This means the generated
+validator can check keys sequentially without tracking seen flags:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-10-1" name="__codelineno-10-1" href="#__codelineno-10-1"></a>fn validate_value(bytes: ByteArray, pos: Int) -&gt; Int {
+<a id="__codelineno-10-2" name="__codelineno-10-2" href="#__codelineno-10-2"></a>  // Keys in canonical order: &quot;amount&quot; &lt; &quot;label&quot; &lt; &quot;payload&quot;
+<a id="__codelineno-10-3" name="__codelineno-10-3" href="#__codelineno-10-3"></a>  let ParseResult { value: count, pos } = parse_map_header(bytes, pos)
+<a id="__codelineno-10-4" name="__codelineno-10-4" href="#__codelineno-10-4"></a>
+<a id="__codelineno-10-5" name="__codelineno-10-5" href="#__codelineno-10-5"></a>  // &quot;amount&quot; (required)
+<a id="__codelineno-10-6" name="__codelineno-10-6" href="#__codelineno-10-6"></a>  let ParseResult { value: key, pos } = parse_tstr(bytes, pos)
+<a id="__codelineno-10-7" name="__codelineno-10-7" href="#__codelineno-10-7"></a>  expect key == &quot;amount&quot;
+<a id="__codelineno-10-8" name="__codelineno-10-8" href="#__codelineno-10-8"></a>  let ParseResult { pos, .. } = parse_uint(bytes, pos)
+<a id="__codelineno-10-9" name="__codelineno-10-9" href="#__codelineno-10-9"></a>
+<a id="__codelineno-10-10" name="__codelineno-10-10" href="#__codelineno-10-10"></a>  // &quot;label&quot; (optional) — only if count &gt; 2
+<a id="__codelineno-10-11" name="__codelineno-10-11" href="#__codelineno-10-11"></a>  let pos = if count &gt; 2 {
+<a id="__codelineno-10-12" name="__codelineno-10-12" href="#__codelineno-10-12"></a>    let ParseResult { value: key, pos } = parse_tstr(bytes, pos)
+<a id="__codelineno-10-13" name="__codelineno-10-13" href="#__codelineno-10-13"></a>    expect key == &quot;label&quot;
+<a id="__codelineno-10-14" name="__codelineno-10-14" href="#__codelineno-10-14"></a>    let ParseResult { pos, .. } = parse_tstr(bytes, pos)
+<a id="__codelineno-10-15" name="__codelineno-10-15" href="#__codelineno-10-15"></a>    pos
+<a id="__codelineno-10-16" name="__codelineno-10-16" href="#__codelineno-10-16"></a>  } else {
+<a id="__codelineno-10-17" name="__codelineno-10-17" href="#__codelineno-10-17"></a>    pos
+<a id="__codelineno-10-18" name="__codelineno-10-18" href="#__codelineno-10-18"></a>  }
+<a id="__codelineno-10-19" name="__codelineno-10-19" href="#__codelineno-10-19"></a>
+<a id="__codelineno-10-20" name="__codelineno-10-20" href="#__codelineno-10-20"></a>  // &quot;payload&quot; (required)
+<a id="__codelineno-10-21" name="__codelineno-10-21" href="#__codelineno-10-21"></a>  let ParseResult { value: key, pos } = parse_tstr(bytes, pos)
+<a id="__codelineno-10-22" name="__codelineno-10-22" href="#__codelineno-10-22"></a>  expect key == &quot;payload&quot;
+<a id="__codelineno-10-23" name="__codelineno-10-23" href="#__codelineno-10-23"></a>  let ParseResult { pos, .. } = parse_bstr(bytes, pos)
+<a id="__codelineno-10-24" name="__codelineno-10-24" href="#__codelineno-10-24"></a>
+<a id="__codelineno-10-25" name="__codelineno-10-25" href="#__codelineno-10-25"></a>  pos
+<a id="__codelineno-10-26" name="__codelineno-10-26" href="#__codelineno-10-26"></a>}
+</code></pre></div>
+<h2 id="cbor-encoding-reference">CBOR Encoding Reference</h2>
+<p>For the parsing library, the relevant CBOR encoding (RFC 7049):</p>
+<table>
+<thead>
+<tr>
+<th>Major Type</th>
+<th>Value</th>
+<th>Encoding</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>0</td>
+<td>Unsigned int</td>
+<td><code>0x00</code>–<code>0x17</code> (0–23 inline), <code>0x18</code> + 1 byte, <code>0x19</code> + 2 bytes, <code>0x1a</code> + 4 bytes, <code>0x1b</code> + 8 bytes</td>
+</tr>
+<tr>
+<td>1</td>
+<td>Negative int</td>
+<td>Same additional info encoding as type 0, value = -1 - arg</td>
+</tr>
+<tr>
+<td>2</td>
+<td>Byte string</td>
+<td>Length-prefixed (same encoding as int for length)</td>
+</tr>
+<tr>
+<td>3</td>
+<td>Text string</td>
+<td>Length-prefixed (same encoding as int for length)</td>
+</tr>
+<tr>
+<td>4</td>
+<td>Array</td>
+<td>Count-prefixed</td>
+</tr>
+<tr>
+<td>5</td>
+<td>Map</td>
+<td>Count-prefixed (count = number of key-value pairs)</td>
+</tr>
+<tr>
+<td>7</td>
+<td>Simple</td>
+<td><code>0xf4</code> = false, <code>0xf5</code> = true, <code>0xf6</code> = null</td>
+</tr>
+</tbody>
+</table>
+<h2 id="mpfs-integration">MPFS Integration</h2>
+<h3 id="existing-request-structure">Existing Request Structure</h3>
+<p>From <code>cardano-mpfs-onchain/validators/types.ak</code>:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-11-1" name="__codelineno-11-1" href="#__codelineno-11-1"></a>pub type Request {
+<a id="__codelineno-11-2" name="__codelineno-11-2" href="#__codelineno-11-2"></a>  requestToken: TokenId,
+<a id="__codelineno-11-3" name="__codelineno-11-3" href="#__codelineno-11-3"></a>  requestOwner: VerificationKeyHash,
+<a id="__codelineno-11-4" name="__codelineno-11-4" href="#__codelineno-11-4"></a>  requestKey: ByteArray,           // ← CBOR bytes to validate
+<a id="__codelineno-11-5" name="__codelineno-11-5" href="#__codelineno-11-5"></a>  requestValue: Operation,         // ← contains CBOR bytes
+<a id="__codelineno-11-6" name="__codelineno-11-6" href="#__codelineno-11-6"></a>  fee: Int,
+<a id="__codelineno-11-7" name="__codelineno-11-7" href="#__codelineno-11-7"></a>  submitted_at: Int,
+<a id="__codelineno-11-8" name="__codelineno-11-8" href="#__codelineno-11-8"></a>}
+<a id="__codelineno-11-9" name="__codelineno-11-9" href="#__codelineno-11-9"></a>
+<a id="__codelineno-11-10" name="__codelineno-11-10" href="#__codelineno-11-10"></a>pub type Operation {
+<a id="__codelineno-11-11" name="__codelineno-11-11" href="#__codelineno-11-11"></a>  Insert(ByteArray)                // value bytes
+<a id="__codelineno-11-12" name="__codelineno-11-12" href="#__codelineno-11-12"></a>  Delete(ByteArray)                // expected value bytes
+<a id="__codelineno-11-13" name="__codelineno-11-13" href="#__codelineno-11-13"></a>  Update(ByteArray, ByteArray)     // (old_value, new_value) bytes
+<a id="__codelineno-11-14" name="__codelineno-11-14" href="#__codelineno-11-14"></a>}
+</code></pre></div>
+<h3 id="how-the-withdrawal-validator-integrates">How the Withdrawal Validator Integrates</h3>
+<p>The cage validator will be parameterized with an optional <code>ScriptHash</code>.
+When present, at <strong>mint time</strong> (<code>Minting</code> redeemer), the cage validator
+requires the withdrawal validator to be present in <code>tx.withdrawals</code>.</p>
+<p>The withdrawal validator reads the transaction context to find the
+request input (there's exactly one at mint time), extracts <code>requestKey</code>
+and the value <code>ByteArray</code> from <code>requestValue</code>, and validates both
+against the CDDL schema.</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-12-1" name="__codelineno-12-1" href="#__codelineno-12-1"></a>validator cddl_schema {
+<a id="__codelineno-12-2" name="__codelineno-12-2" href="#__codelineno-12-2"></a>  withdraw(redeemer: Data, ctx: ScriptContext) {
+<a id="__codelineno-12-3" name="__codelineno-12-3" href="#__codelineno-12-3"></a>    // Find the request input in the transaction
+<a id="__codelineno-12-4" name="__codelineno-12-4" href="#__codelineno-12-4"></a>    let request = find_request_input(ctx.transaction)
+<a id="__codelineno-12-5" name="__codelineno-12-5" href="#__codelineno-12-5"></a>
+<a id="__codelineno-12-6" name="__codelineno-12-6" href="#__codelineno-12-6"></a>    // Validate key CBOR
+<a id="__codelineno-12-7" name="__codelineno-12-7" href="#__codelineno-12-7"></a>    let key_end = validate_key(request.requestKey, 0)
+<a id="__codelineno-12-8" name="__codelineno-12-8" href="#__codelineno-12-8"></a>    expect key_end == builtin.length_of_bytearray(request.requestKey)
+<a id="__codelineno-12-9" name="__codelineno-12-9" href="#__codelineno-12-9"></a>
+<a id="__codelineno-12-10" name="__codelineno-12-10" href="#__codelineno-12-10"></a>    // Extract value bytes from Operation
+<a id="__codelineno-12-11" name="__codelineno-12-11" href="#__codelineno-12-11"></a>    let value_bytes = get_value_bytes(request.requestValue)
+<a id="__codelineno-12-12" name="__codelineno-12-12" href="#__codelineno-12-12"></a>
+<a id="__codelineno-12-13" name="__codelineno-12-13" href="#__codelineno-12-13"></a>    // Validate value CBOR
+<a id="__codelineno-12-14" name="__codelineno-12-14" href="#__codelineno-12-14"></a>    let value_end = validate_value(value_bytes, 0)
+<a id="__codelineno-12-15" name="__codelineno-12-15" href="#__codelineno-12-15"></a>    expect value_end == builtin.length_of_bytearray(value_bytes)
+<a id="__codelineno-12-16" name="__codelineno-12-16" href="#__codelineno-12-16"></a>
+<a id="__codelineno-12-17" name="__codelineno-12-17" href="#__codelineno-12-17"></a>    True
+<a id="__codelineno-12-18" name="__codelineno-12-18" href="#__codelineno-12-18"></a>  }
+<a id="__codelineno-12-19" name="__codelineno-12-19" href="#__codelineno-12-19"></a>}
+</code></pre></div>
+<h3 id="changes-needed-in-cardano-mpfs-onchain">Changes Needed in cardano-mpfs-onchain</h3>
+<ol>
+<li>Add optional <code>schema_validator: Option&lt;ScriptHash&gt;</code> parameter to
+   the cage validator</li>
+<li>In <code>validateMint</code>, when <code>schema_validator</code> is <code>Some(hash)</code>:
+   require <code>hash</code> is present in <code>tx.withdrawals</code></li>
+<li>The withdrawal validator runs automatically via Cardano ledger rules</li>
+</ol>
+<h2 id="resolved-design-decisions">Resolved Design Decisions</h2>
+<table>
+<thead>
+<tr>
+<th>Decision</th>
+<th>Choice</th>
+<th>Rationale</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Canonical CBOR</td>
+<td><strong>Required</strong></td>
+<td>Keys must be in lexicographic order (RFC 7049 §3.9). Simplifies generated code — sequential key matching instead of permutation tracking</td>
+</tr>
+<tr>
+<td>Trace messages</td>
+<td><strong>Yes</strong></td>
+<td>Include <code>trace @"key: expected 'owner'"</code> style messages for debugging. Cost is acceptable for schema validators</td>
+</tr>
+<tr>
+<td>Schema cardinality</td>
+<td><strong>One per cage</strong></td>
+<td>Each CDDL file produces one withdrawal validator. Different cages can use different schemas</td>
+</tr>
+<tr>
+<td>Data representation</td>
+<td><strong>Raw CBOR bytes</strong></td>
+<td>Key and value are <code>ByteArray</code> containing CBOR, parsed on-chain</td>
+</tr>
+</tbody>
+</table>
+<h2 id="open-questions">Open Questions</h2>
+<ol>
+<li>
+<p><strong>Script size budget</strong>: On-chain CBOR parsing is expensive. Need to
+   profile generated validators to ensure they fit within transaction limits.</p>
+</li>
+<li>
+<p><strong>Request discovery</strong>: How does the withdrawal validator find the
+   request input? By datum type? By address? Needs alignment with
+   cage validator changes.</p>
+</li>
+</ol>
+<h2 id="implementation-plan">Implementation Plan</h2>
+<h3 id="phase-1-cbor-parsing-library-aiken">Phase 1: CBOR Parsing Library (Aiken)</h3>
+<p>Write and test the base CBOR parsing library in Aiken. This is
+reusable across all generated validators.</p>
+<h3 id="phase-2-haskell-cddl-parser">Phase 2: Haskell CDDL Parser</h3>
+<p>Parse the JSON-like CDDL subset into the internal <code>CborSchema</code> IR.
+Either use an existing library or write a minimal parser.</p>
+<h3 id="phase-3-aiken-code-generator">Phase 3: Aiken Code Generator</h3>
+<p>Haskell module that takes <code>CborSchema</code> and emits Aiken source code.
+Produces a complete Aiken project (source + <code>aiken.toml</code>).</p>
+<h3 id="phase-4-cli">Phase 4: CLI</h3>
+<p>Command-line tool: <code>cddl-aiken compile schema.cddl -o output/</code></p>
+<h3 id="phase-5-integration-with-mpfs">Phase 5: Integration with MPFS</h3>
+<p>Wire up with the cage validator parameterization. Test end-to-end
+with a real cage.</p>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "..", "features": ["navigation.indexes", "navigation.sections", "navigation.path", "toc.integrate", "content.code.copy"], "search": "../assets/javascripts/workers/search.7a47a382.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../assets/javascripts/bundle.e71a0d61.min.js"></script>
+      
+    
+  </body>
+</html>
